@@ -53,7 +53,7 @@ docker-compose restart symfony
 
 ### Uruchamianie testów
 ```bash
-docker-compose exec symfony php bin/phpunit
+docker-compose exec symfony php vendor/bin/phpunit
 ```
 
 ## Komendy Phoenix

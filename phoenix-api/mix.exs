@@ -37,6 +37,7 @@ defmodule PhoenixApi.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.0"},
       {:phoenix_view, "~> 2.0"},
+      {:phoenix_live_view, "~> 1.1"},
       {:phoenix_live_reload, "~> 1.4", only: :dev},
       {:floki, ">= 0.30.0", only: :test},
       {:telemetry_metrics, "~> 0.6"},
