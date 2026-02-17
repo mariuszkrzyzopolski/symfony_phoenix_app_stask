@@ -8,6 +8,12 @@
         <env name="KERNEL_CLASS" value="App\Kernel"/>
         <env name="APP_ENV" value="test"/>
         <env name="APP_DEBUG" value="1"/>
+
+        <!-- ###+ symfony/framework-bundle ### -->
+        <env name="APP_ENV" value="dev"/>
+        <env name="APP_SECRET" value="$APP_SECRET"/>
+        <env name="DATABASE_URL" value="$DATABASE_URL"/>
+        <!-- ###- doctrine/doctrine-bundle ### -->
     </php>
     <testsuites>
         <testsuite name="App Test Suite">
