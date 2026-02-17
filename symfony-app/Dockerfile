@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y git unzip libpq-dev libxml2-dev \
     && docker-php-ext-install pdo pdo_pgsql xml
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN pecl install pcov && docker-php-ext-enable pcov
 
 COPY ./entrypoint.sh /entrypoint.sh
 

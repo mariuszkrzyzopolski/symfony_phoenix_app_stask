@@ -12,3 +12,10 @@ services:
     test.App\Domain\Port\PhoenixClientInterface:
         alias: App\Domain\Port\PhoenixClientInterface
         public: true
+
+    # Make session service available in tests
+    Symfony\Component\HttpFoundation\Session\Session:
+        public: true
+    Symfony\Component\HttpFoundation\Session\SessionInterface:
+        alias: Symfony\Component\HttpFoundation\Session\Session
+        public: true
