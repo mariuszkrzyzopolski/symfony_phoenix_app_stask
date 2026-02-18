@@ -39,29 +39,33 @@ class ProfileController extends AbstractController
             $phoenixToken = $request->request->get('phoenix_access_token');
             
             if (empty($phoenixToken)) {
-                $this->addFlash('error', 'Phoenix API token is required');
+                $this->addFlash('error', 'API access token is required');
+            } elseif (strlen($phoenixToken) > 1000) {
+                $this->addFlash('error', 'API access token is too long');
+            } elseif (!preg_match('/^[a-zA-Z0-9._-]+$/', $phoenixToken)) {
+                $this->addFlash('error', 'API access token contains invalid characters');
             } else {
-                // Save token to user
                 $user->setPhoenixAccessToken($phoenixToken);
                 
                 try {
-                    // Import photos from Phoenix API
                     $result = $phoenixApiService->importPhotos($phoenixToken);
                     
                     if ($result['success']) {
-                        // Create Photo entities for imported photos
                         foreach ($result['photos'] as $photoData) {
-                            // Check if photo already exists to prevent duplicates
                             $existingPhoto = $em->getRepository(Photo::class)->findOneBy([
                                 'user' => $user,
                                 'imageUrl' => $photoData['photo_url']
                             ]);
                             
                             if (!$existingPhoto) {
-                                $photo = new Photo();
-                                $photo->setImageUrl($photoData['photo_url']);
-                                $photo->setUser($user);
-                                $em->persist($photo);
+                                $photoUrl = $photoData['photo_url'];
+                                
+                                if (filter_var($photoUrl, FILTER_VALIDATE_URL) && strlen($photoUrl) <= 2048) {
+                                    $photo = new Photo();
+                                    $photo->setImageUrl($photoUrl);
+                                    $photo->setUser($user);
+                                    $em->persist($photo);
+                                }
                             }
                         }
                         

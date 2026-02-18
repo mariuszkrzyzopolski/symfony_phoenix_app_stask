@@ -165,7 +165,7 @@ class PhoenixTokenWorkflowTest extends BaseWebTestCase
         $client->followRedirect();
         
         $this->assertSelectorExists('.flash-message.error');
-        $this->assertStringContainsString('Phoenix API token is required', $client->getCrawler()->filter('.flash-message.error')->text());
+        $this->assertStringContainsString('API access token is required', $client->getCrawler()->filter('.flash-message.error')->text());
     }
 
     public function testMultiplePhotoImports(): void

@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Likes\LikeRepository;
 use App\Repository\PhotoRepository;
+use App\Service\PhotoFilterService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,12 +22,18 @@ class HomeController extends AbstractController
      * @Route("/", name="home")
      * @return JsonResponse
      */
-    public function index(Request $request, EntityManagerInterface $em, ManagerRegistry $managerRegistry): Response
+    public function index(Request $request, EntityManagerInterface $em, ManagerRegistry $managerRegistry, PhotoFilterService $filterService): Response
     {
         $photoRepository = new PhotoRepository($managerRegistry);
         $likeRepository = new LikeRepository($managerRegistry);
 
-        $photos = $photoRepository->findAllWithUsers();
+        $filters = $filterService->processFilters($request->query->all());
+        
+        if ($filterService->hasActiveFilters($filters)) {
+            $photos = $photoRepository->findByFilters($filters);
+        } else {
+            $photos = $photoRepository->findAllWithUsers();
+        }
 
         $session = $request->getSession();
         $userId = $session->get('user_id');
@@ -48,6 +55,9 @@ class HomeController extends AbstractController
             'photos' => $photos,
             'currentUser' => $currentUser,
             'userLikes' => $userLikes,
+            'filters' => $filters,
+            'filterSummary' => $filterService->getFilterSummary($filters),
+            'hasActiveFilters' => $filterService->hasActiveFilters($filters),
         ]);
     }
 }

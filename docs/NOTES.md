@@ -12,7 +12,7 @@ Issues and fixes:
 TODO:
 - Separate and move Likes to correct directories (Entity, Repository, Service)
 - Replace RAW SQL queries with ORM
-- Separate functions to services for better granularity. Priority is ProfileController
+- Separate rest of the functions to services for better granularity
 - phoenix tests return error (cannot invoke sandbox operation with pool DBConnection.ConnectionPool)
 - Prepare login screen to symfony app. Similar form structure to import section
 
@@ -21,7 +21,7 @@ Done:
 - Coverage report generation with coverage driver added to docker image dev stage
 - Task 2 functionality with importing photos from phoenix api and test coverage
 - Basic complexity refactor for base components and tests
-
+- Task 3 filtering by fields with basic field sanitization
 
 Additional tools used:
 - Windsurf with SWE-1.5 as Code Agent Assistant (VS code fork)
