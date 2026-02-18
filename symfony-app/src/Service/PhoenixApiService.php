@@ -20,7 +20,7 @@ class PhoenixApiService
         $this->baseUrl = rtrim($baseUrl, '/');
     }
 
-    public function importPhotos(string $token): array
+    public function fetchPhotosFromApi(string $token): array
     {
         try {
             $response = $this->httpClient->request('GET', $this->baseUrl . '/api/photos', [
@@ -111,26 +111,6 @@ class PhoenixApiService
                 'error' => 'An unexpected error occurred',
                 'photos' => []
             ];
-        }
-    }
-
-    public function validateToken(string $token): bool
-    {
-        try {
-            $response = $this->httpClient->request('GET', $this->baseUrl . '/api/photos', [
-                'headers' => [
-                    'access-token' => $token,
-                    'Accept' => 'application/json',
-                ],
-                'timeout' => 10,
-            ]);
-
-            $statusCode = $response->getStatusCode();
-            
-            return $statusCode === 200;
-
-        } catch (TransportExceptionInterface | ClientExceptionInterface | ServerExceptionInterface $e) {
-            return false;
         }
     }
 }

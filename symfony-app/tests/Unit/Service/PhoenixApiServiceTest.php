@@ -35,7 +35,7 @@ class PhoenixApiServiceTest extends TestCase
             200
         );
 
-        $result = $this->service->importPhotos($token);
+        $result = $this->service->fetchPhotosFromApi($token);
 
         $this->assertTrue($result['success']);
         $this->assertCount(3, $result['photos']);
@@ -61,7 +61,7 @@ class PhoenixApiServiceTest extends TestCase
             401
         );
 
-        $result = $this->service->importPhotos($token);
+        $result = $this->service->fetchPhotosFromApi($token);
 
         $this->assertFalse($result['success']);
         $this->assertEquals('Invalid or expired token', $result['error']);
@@ -79,7 +79,7 @@ class PhoenixApiServiceTest extends TestCase
             200
         );
 
-        $result = $this->service->importPhotos($token);
+        $result = $this->service->fetchPhotosFromApi($token);
 
         $this->assertTrue($result['success']);
         $this->assertEmpty($result['photos']);
@@ -97,7 +97,7 @@ class PhoenixApiServiceTest extends TestCase
             500
         );
 
-        $result = $this->service->importPhotos($token);
+        $result = $this->service->fetchPhotosFromApi($token);
 
         $this->assertFalse($result['success']);
         $this->assertEquals('Server error occurred', $result['error']);
@@ -110,7 +110,7 @@ class PhoenixApiServiceTest extends TestCase
         
         // Don't set any response to simulate connection error
         // The service should catch the exception and return an error array
-        $result = $this->service->importPhotos($token);
+        $result = $this->service->fetchPhotosFromApi($token);
         
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -128,58 +128,11 @@ class PhoenixApiServiceTest extends TestCase
             200
         );
 
-        $result = $this->service->importPhotos($token);
+        $result = $this->service->fetchPhotosFromApi($token);
 
         $this->assertFalse($result['success']);
         $this->assertEquals('Invalid response format', $result['error']);
         $this->assertEmpty($result['photos']);
-    }
-
-    public function testValidateTokenWithValidToken(): void
-    {
-        $token = PhoenixApiResponseFixtures::getValidToken();
-        $expectedResponse = PhoenixApiResponseFixtures::getSuccessfulPhotosResponse();
-        
-        $this->httpClient->setResponse(
-            'http://phoenix-api.test/api/photos',
-            $expectedResponse,
-            200
-        );
-
-        $result = $this->service->validateToken($token);
-
-        $this->assertTrue($result);
-    }
-
-    public function testValidateTokenWithInvalidToken(): void
-    {
-        $token = PhoenixApiResponseFixtures::getInvalidToken();
-        $errorResponse = PhoenixApiResponseFixtures::getUnauthorizedResponse();
-        
-        $this->httpClient->setResponse(
-            'http://phoenix-api.test/api/photos',
-            $errorResponse,
-            401
-        );
-
-        $result = $this->service->validateToken($token);
-
-        $this->assertFalse($result);
-    }
-
-    public function testValidateTokenWithConnectionError(): void
-    {
-        $token = PhoenixApiResponseFixtures::getValidToken();
-        
-        $this->httpClient->setResponse(
-            'http://phoenix-api.test/api/photos',
-            [],
-            500
-        );
-        
-        $result = $this->service->validateToken($token);
-        
-        $this->assertFalse($result);
     }
 
     public function testServiceConstructor(): void

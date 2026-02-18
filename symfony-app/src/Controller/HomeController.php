@@ -4,60 +4,29 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\User;
-use App\Repository\LikeRepository;
-use App\Repository\PhotoRepository;
-use App\Service\PhotoFilterService;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Service\HomeDataService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
 {
+    public function __construct(
+        private HomeDataService $homeDataService
+    ) {}
+
     /**
      * @Route("/", name="home")
-     * @return JsonResponse
+     * @return Response
      */
-    public function index(Request $request, EntityManagerInterface $em, ManagerRegistry $managerRegistry, PhotoFilterService $filterService): Response
+    public function index(Request $request): Response
     {
-        $photoRepository = new PhotoRepository($managerRegistry);
-        $likeRepository = new LikeRepository($managerRegistry);
-
-        $filters = $filterService->processFilters($request->query->all());
-        
-        if ($filterService->hasActiveFilters($filters)) {
-            $photos = $photoRepository->findByFilters($filters);
-        } else {
-            $photos = $photoRepository->findAllWithUsers();
-        }
-
         $session = $request->getSession();
         $userId = $session->get('user_id');
-        $currentUser = null;
-        $userLikes = [];
+        
+        $homeData = $this->homeDataService->getHomeData($request->query->all(), $userId);
 
-        if ($userId) {
-            $currentUser = $em->getRepository(User::class)->find($userId);
-
-            if ($currentUser) {
-                foreach ($photos as $photo) {
-                    $likeRepository->setUser($currentUser);
-                    $userLikes[$photo->getId()] = $likeRepository->hasUserLikedPhoto($photo);
-                }
-            }
-        }
-
-        return $this->render('home/index.html.twig', [
-            'photos' => $photos,
-            'currentUser' => $currentUser,
-            'userLikes' => $userLikes,
-            'filters' => $filters,
-            'filterSummary' => $filterService->getFilterSummary($filters),
-            'hasActiveFilters' => $filterService->hasActiveFilters($filters),
-        ]);
+        return $this->render('home/index.html.twig', $homeData);
     }
 }

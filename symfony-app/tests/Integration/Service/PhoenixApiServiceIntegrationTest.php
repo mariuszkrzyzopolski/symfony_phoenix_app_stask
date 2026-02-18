@@ -23,7 +23,7 @@ class PhoenixApiServiceIntegrationTest extends KernelTestCase
         $this->service = new PhoenixApiService($this->httpClient, 'http://phoenix-api.test');
     }
 
-    public function testRealApiCommunicationWithValidToken(): void
+    public function testCommunicationWithValidToken(): void
     {
         $responses = [
             new MockResponse(json_encode([
@@ -37,29 +37,11 @@ class PhoenixApiServiceIntegrationTest extends KernelTestCase
         $this->httpClient = new MockHttpClient($responses, 'http://phoenix-api.test');
         $this->service = new PhoenixApiService($this->httpClient, 'http://phoenix-api.test');
 
-        $result = $this->service->importPhotos('valid-token');
+        $result = $this->service->fetchPhotosFromApi('valid-token');
 
         $this->assertTrue($result['success']);
         $this->assertCount(2, $result['photos']);
         $this->assertEquals('https://example.com/photo1.jpg', $result['photos'][0]['photo_url']);
-    }
-
-    public function testTokenValidationAgainstLiveApi(): void
-    {
-        $responses = [
-            new MockResponse(json_encode([
-                'photos' => [
-                    ['id' => 1, 'photo_url' => 'https://example.com/photo1.jpg']
-                ]
-            ]), ['http_code' => 200])
-        ];
-
-        $this->httpClient = new MockHttpClient($responses, 'http://phoenix-api.test');
-        $this->service = new PhoenixApiService($this->httpClient, 'http://phoenix-api.test');
-
-        $isValid = $this->service->validateToken('valid-token');
-
-        $this->assertTrue($isValid);
     }
 
     public function testPhotoImportWithRealData(): void
@@ -86,7 +68,7 @@ class PhoenixApiServiceIntegrationTest extends KernelTestCase
         $this->httpClient = new MockHttpClient($responses, 'http://phoenix-api.test');
         $this->service = new PhoenixApiService($this->httpClient, 'http://phoenix-api.test');
 
-        $result = $this->service->importPhotos('real-token');
+        $result = $this->service->fetchPhotosFromApi('real-token');
 
         $this->assertTrue($result['success']);
         $this->assertCount(3, $result['photos']);
@@ -110,7 +92,7 @@ class PhoenixApiServiceIntegrationTest extends KernelTestCase
         $this->httpClient = new MockHttpClient($responses, 'http://phoenix-api.test');
         $this->service = new PhoenixApiService($this->httpClient, 'http://phoenix-api.test');
 
-        $result = $this->service->importPhotos('invalid-token');
+        $result = $this->service->fetchPhotosFromApi('invalid-token');
 
         $this->assertFalse($result['success']);
         $this->assertEquals('Invalid or expired token', $result['error']);
@@ -126,7 +108,7 @@ class PhoenixApiServiceIntegrationTest extends KernelTestCase
         $this->service = new PhoenixApiService($this->httpClient, 'http://phoenix-api.test');
 
         // The service should handle timeout gracefully and return an error array
-        $result = $this->service->importPhotos('timeout-token');
+        $result = $this->service->fetchPhotosFromApi('timeout-token');
         
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -143,7 +125,7 @@ class PhoenixApiServiceIntegrationTest extends KernelTestCase
         $this->httpClient = new MockHttpClient($responses, 'https://custom-phoenix.example.com');
         $service = new PhoenixApiService($this->httpClient, 'https://custom-phoenix.example.com');
 
-        $result = $service->importPhotos('test-token');
+        $result = $service->fetchPhotosFromApi('test-token');
 
         $this->assertTrue($result['success']);
         $this->assertEmpty($result['photos']);
