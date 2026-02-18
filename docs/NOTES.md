@@ -1,6 +1,6 @@
 Notatki w języku angielskim w ramach nawyku pisania dokumentacji w tym języku
 
-My starting aproach is to prepare basic test cases for existing functionalities, fix any bugs found during this process, and then add new test cases for new functionalities. Base tool for checking completion rate will be coverage reports 
+My starting aproach is to prepare basic test cases for existing functionalities, fix any bugs found during this process, and then add new test cases for new functionalities. Base tool for checking completion rating will be coverage reports 
 
 Issues and fixes:
 - Temporary removed phoenix_live_dashboard dependency as it was crashing during phoenix app startup(Will try to fix it later)
@@ -9,10 +9,14 @@ Issues and fixes:
 - Changed user removePhoto to delete photo with user, as ORM require photo to have user
 - Test flooding logs with html structure during assert, resolved by checking only specific elements or covert output to text only
 
+Suggestions/Ideas:
+- Login screen to symfony app. Similar form structure to import section but would require bigger auth system
+- Dynamic refresh of gallery with filters, but would require more complex implementation
+- Even greater split of components into smaller parts to improve complexity rating, but it would cause lose of readability
+
 TODO:
 - Replace RAW SQL queries with ORM
 - phoenix tests return error (cannot invoke sandbox operation with pool DBConnection.ConnectionPool)
-- Prepare login screen to symfony app. Similar form structure to import section
 
 Done:
 - Unit, integration and app tests cases for base application
