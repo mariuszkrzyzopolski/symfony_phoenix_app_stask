@@ -23,6 +23,7 @@ Done:
 - Basic complexity refactor for base components and tests
 - Task 3 filtering by fields with basic field sanitization
 - Task 4 with hammer rate limiting
+- Refactor Likes to proper components
 
 Additional tools used:
 - Windsurf with SWE-1.5 as Code Agent Assistant (VS code fork)

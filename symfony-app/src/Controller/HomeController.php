@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Likes\LikeRepository;
+use App\Repository\LikeRepository;
 use App\Repository\PhotoRepository;
 use App\Service\PhotoFilterService;
 use Doctrine\ORM\EntityManagerInterface;

@@ -6,8 +6,8 @@ namespace App\Tests\Integration\Repository;
 
 use App\Entity\Photo;
 use App\Entity\User;
-use App\Likes\Like;
-use App\Likes\LikeRepository;
+use App\Entity\Like;
+use App\Repository\LikeRepository;
 use App\Tests\TestCase;
 
 class LikeRepositoryTest extends TestCase
