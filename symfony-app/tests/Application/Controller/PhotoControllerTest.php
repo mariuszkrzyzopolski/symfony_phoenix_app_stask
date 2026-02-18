@@ -31,8 +31,12 @@ class PhotoControllerTest extends BaseWebTestCase
         }
     }
 
-    private function createTestUser(string $username = 'testuser'): \App\Entity\User
+    private function createTestUser(string $username = null): \App\Entity\User
     {
+        if ($username === null) {
+            $username = 'testuser_' . uniqid();
+        }
+        
         $user = new \App\Entity\User();
         $user->setUsername($username);
         $user->setEmail($username . '@example.com');

@@ -38,6 +38,9 @@ class User
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Photo::class, cascade: ['persist', 'remove'])]
     private Collection $photos;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $phoenixAccessToken = null;
+
     public function __construct()
     {
         $this->photos = new ArrayCollection();
@@ -135,6 +138,17 @@ class User
     public function removePhoto(Photo $photo): self
     {
         $this->photos->removeElement($photo);
+        return $this;
+    }
+
+    public function getPhoenixAccessToken(): ?string
+    {
+        return $this->phoenixAccessToken;
+    }
+
+    public function setPhoenixAccessToken(?string $phoenixAccessToken): self
+    {
+        $this->phoenixAccessToken = $phoenixAccessToken;
         return $this;
     }
 }

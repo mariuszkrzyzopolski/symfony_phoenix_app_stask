@@ -25,6 +25,9 @@ class PhotoRepositoryTest extends TestCase
         
         $this->repository = $this->entityManager->getRepository(Photo::class);
         
+        $this->entityManager->createQuery('DELETE FROM App\Entity\Photo')->execute();
+        $this->entityManager->createQuery('DELETE FROM App\Entity\User')->execute();
+        
         $this->entityManager->beginTransaction();
     }
 
@@ -39,8 +42,12 @@ class PhotoRepositoryTest extends TestCase
         $this->entityManager->close();
     }
 
-    private function createUser(string $username = 'testuser'): User
+    private function createUser(string $username = null): User
     {
+        if ($username === null) {
+            $username = 'testuser_' . uniqid();
+        }
+        
         $user = new User();
         $user->setUsername($username);
         $user->setEmail($username . '@example.com');

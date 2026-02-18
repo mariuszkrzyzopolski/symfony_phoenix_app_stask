@@ -180,4 +180,36 @@ class UserTest extends TestCase
         $this->assertEquals(25, $user->getAge());
         $this->assertEquals('Software Developer', $user->getBio());
     }
+
+    public function testPhoenixAccessTokenSettersAndGetters(): void
+    {
+        $token = 'test-phoenix-access-token-12345';
+        
+        $this->user->setPhoenixAccessToken($token);
+        $this->assertEquals($token, $this->user->getPhoenixAccessToken());
+    }
+
+    public function testPhoenixAccessTokenCanBeNull(): void
+    {
+        $this->user->setPhoenixAccessToken(null);
+        $this->assertNull($this->user->getPhoenixAccessToken());
+    }
+
+    public function testPhoenixAccessTokenCanBeEmptyString(): void
+    {
+        $this->user->setPhoenixAccessToken('');
+        $this->assertEquals('', $this->user->getPhoenixAccessToken());
+    }
+
+    public function testUserCreationWithPhoenixToken(): void
+    {
+        $user = new User();
+        $user->setUsername('johndoe');
+        $user->setEmail('john@example.com');
+        $user->setPhoenixAccessToken('phoenix-token-abc123');
+
+        $this->assertEquals('johndoe', $user->getUsername());
+        $this->assertEquals('john@example.com', $user->getEmail());
+        $this->assertEquals('phoenix-token-abc123', $user->getPhoenixAccessToken());
+    }
 }

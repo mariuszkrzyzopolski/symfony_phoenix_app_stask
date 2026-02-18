@@ -7,3 +7,8 @@ services:
         resource: '../src/'
         exclude:
             - '../src/Kernel.php'
+
+    # Phoenix API Service Configuration
+    App\Service\PhoenixApiService:
+        arguments:
+            $baseUrl: '%env(PHOENIX_API_BASE_URL)%'

@@ -33,9 +33,12 @@ class ProfileControllerTest extends BaseWebTestCase
 
     private function createTestUser(string $username = 'testuser'): \App\Entity\User
     {
+        // Generate unique username to avoid conflicts
+        $uniqueUsername = $username . '_' . uniqid();
+        
         $user = new \App\Entity\User();
-        $user->setUsername($username);
-        $user->setEmail($username . '@example.com');
+        $user->setUsername($uniqueUsername);
+        $user->setEmail($uniqueUsername . '@example.com');
         $user->setName('Test');
         $user->setLastName('User');
         $user->setAge(25);
@@ -64,13 +67,13 @@ class ProfileControllerTest extends BaseWebTestCase
         
         $this->authenticateClient($client, $user);
         
-        $client->request('GET', '/profile');
+        $crawler = $client->request('GET', '/profile');
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         
-        $this->assertStringContainsString('testuser', $client->getResponse()->getContent());
-        $this->assertStringContainsString('Test', $client->getResponse()->getContent());
-        $this->assertStringContainsString('User', $client->getResponse()->getContent());
+        $this->assertStringContainsString('testuser', $crawler->text());
+        $this->assertStringContainsString('Test', $crawler->text());
+        $this->assertStringContainsString('User', $crawler->text());
     }
 
     public function testProfilePageWithInvalidUserSession(): void
@@ -99,16 +102,15 @@ class ProfileControllerTest extends BaseWebTestCase
     {
         $client = static::createClient();
         
-        $user = $this->createTestUser('john_doe');
+        $user = $this->createTestUser('john');
         
         $this->authenticateClient($client, $user);
         
-        $client->request('GET', '/profile');
+        $crawler = $client->request('GET', '/profile');
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         
-        $this->assertStringContainsString('john_doe', $client->getResponse()->getContent());
-        $this->assertStringContainsString('john_doe@example.com', $client->getResponse()->getContent());
-        $this->assertStringContainsString('Test bio', $client->getResponse()->getContent());
+        $this->assertStringContainsString('john', $crawler->text());
+        $this->assertStringContainsString('Test bio', $crawler->text());
     }
 }

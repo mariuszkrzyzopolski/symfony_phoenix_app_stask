@@ -31,8 +31,12 @@ class HomeControllerTest extends BaseWebTestCase
         }
     }
 
-    private function createTestUser(string $username = 'testuser'): \App\Entity\User
+    private function createTestUser(string $username = null): \App\Entity\User
     {
+        if ($username === null) {
+            $username = 'testuser_' . uniqid();
+        }
+        
         $user = new \App\Entity\User();
         $user->setUsername($username);
         $user->setEmail($username . '@example.com');
@@ -73,10 +77,11 @@ class HomeControllerTest extends BaseWebTestCase
     public function testHomePageWithGetRequest(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/');
+        $crawler = $client->request('GET', '/');
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
-        $this->assertNotNull($client->getResponse()->getContent());
+        $this->assertSelectorExists('html');
+        $this->assertNotEmpty($crawler->text());
     }
 
     public function testHomePageWithNonAuthenticatedUser(): void
@@ -85,7 +90,8 @@ class HomeControllerTest extends BaseWebTestCase
         $crawler = $client->request('GET', '/');
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
-        $this->assertStringContainsString('photos', $client->getResponse()->getContent());
+        $this->assertSelectorExists('html');
+        $this->assertStringContainsString('photos', $crawler->text());
     }
 
     public function testHomePageWithAuthenticatedUser(): void
@@ -112,29 +118,31 @@ class HomeControllerTest extends BaseWebTestCase
         $this->createTestPhoto($user);
         
         
-        $client->request('GET', '/');
+        $crawler = $client->request('GET', '/');
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         
-        $this->assertStringContainsString('photo.jpg', $client->getResponse()->getContent());
+        $this->assertStringContainsString('Test Description', $crawler->text());
     }
 
     public function testHomePageWithInvalidUserSession(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/');
+        $crawler = $client->request('GET', '/');
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
-        $this->assertStringContainsString('photos', $client->getResponse()->getContent());
+        $this->assertSelectorExists('html');
+        $this->assertStringContainsString('photos', $crawler->text());
     }
 
     public function testHomePageWithEmptyDatabase(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/');
+        $crawler = $client->request('GET', '/');
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         
         // Should render even with no photos
-        $this->assertNotNull($client->getResponse()->getContent());
+        $this->assertSelectorExists('html');
+        $this->assertNotEmpty($crawler->text());
     }
 }

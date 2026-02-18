@@ -61,10 +61,10 @@ class AuthControllerTest extends BaseWebTestCase
     public function testLoginPageWithInvalidToken(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/auth/testuser/invalid-token');
+        $crawler = $client->request('GET', '/auth/testuser/invalid-token');
 
         $this->assertEquals(401, $client->getResponse()->getStatusCode());
-        $this->assertStringContainsString('Invalid token', $client->getResponse()->getContent());
+        $this->assertStringContainsString('Invalid token', $crawler->text());
     }
 
     public function testLoginPageWithValidTokenAndExistingUser(): void
@@ -90,10 +90,10 @@ class AuthControllerTest extends BaseWebTestCase
         $user = $this->createTestUser('testuser');
         $this->createTestAuthToken($user, 'valid-token-123');
         
-        $client->request('GET', '/auth/nonexistentuser/valid-token-123');
+        $crawler = $client->request('GET', '/auth/nonexistentuser/valid-token-123');
 
         $this->assertEquals(404, $client->getResponse()->getStatusCode());
-        $this->assertStringContainsString('User not found', $client->getResponse()->getContent());
+        $this->assertStringContainsString('User not found', $crawler->text());
     }
 
     public function testLogoutPageClearsSessionAndRedirects(): void
