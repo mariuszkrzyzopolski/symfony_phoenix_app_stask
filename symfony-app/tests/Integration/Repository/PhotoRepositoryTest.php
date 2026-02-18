@@ -7,70 +7,41 @@ namespace App\Tests\Integration\Repository;
 use App\Entity\Photo;
 use App\Entity\User;
 use App\Repository\PhotoRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Tests\TestCase;
 
 class PhotoRepositoryTest extends TestCase
 {
     private PhotoRepository $repository;
-    private EntityManagerInterface $entityManager;
 
     protected function setUp(): void
     {
         parent::setUp();
         
-        $this->entityManager = TestCase::getTestContainer()
-            ->get('doctrine')
-            ->getManager();
+        $this->repository = $this->getEntityManager()->getRepository(Photo::class);
         
-        $this->repository = $this->entityManager->getRepository(Photo::class);
+        $this->getEntityManager()->createQuery('DELETE FROM App\Entity\Photo')->execute();
+        $this->getEntityManager()->createQuery('DELETE FROM App\Entity\User')->execute();
         
-        $this->entityManager->createQuery('DELETE FROM App\Entity\Photo')->execute();
-        $this->entityManager->createQuery('DELETE FROM App\Entity\User')->execute();
-        
-        $this->entityManager->beginTransaction();
+        $this->getEntityManager()->beginTransaction();
     }
 
     protected function tearDown(): void
     {
-        parent::tearDown();
-        
-        if ($this->entityManager->getConnection()->isTransactionActive()) {
-            $this->entityManager->rollback();
+        if ($this->getEntityManager()->getConnection()->isTransactionActive()) {
+            $this->getEntityManager()->rollback();
         }
         
-        $this->entityManager->close();
+        parent::tearDown();
     }
 
     private function createUser(string $username = null): User
     {
-        if ($username === null) {
-            $username = 'testuser_' . uniqid();
-        }
-        
-        $user = new User();
-        $user->setUsername($username);
-        $user->setEmail($username . '@example.com');
-        $user->setName('Test');
-        $user->setLastName('User');
-        
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-        
-        return $user;
+        return $this->createTestUser($username);
     }
 
     private function createPhoto(User $user, string $imageUrl = 'https://example.com/photo.jpg'): Photo
     {
-        $photo = new Photo();
-        $photo->setImageUrl($imageUrl);
-        $photo->setUser($user);
-        $photo->setDescription('Test photo');
-        
-        $this->entityManager->persist($photo);
-        $this->entityManager->flush();
-        
-        return $photo;
+        return $this->createTestPhoto($user, ['imageUrl' => $imageUrl]);
     }
 
     public function testFindAllWithUsersReturnsEmptyArrayWhenNoPhotos(): void

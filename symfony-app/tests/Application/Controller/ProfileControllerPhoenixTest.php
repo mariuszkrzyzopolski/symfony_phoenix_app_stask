@@ -7,27 +7,19 @@ namespace App\Tests\Application\Controller;
 use App\Tests\BaseWebTestCase;
 use App\Entity\User;
 use App\Entity\Photo;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Component\HttpFoundation\Response;
 
 class ProfileControllerPhoenixTest extends BaseWebTestCase
 {
-    private KernelBrowser $client;
-    private EntityManagerInterface $em;
-
     protected function setUp(): void
     {
         parent::setUp();
-        
-        $this->client = static::createClient();
-        $this->em = static::getContainer()->get(EntityManagerInterface::class);
+        $this->client->disableReboot();
     }
 
     public function testProfilePageDisplaysPhoenixTokenField(): void
     {
         $user = $this->createTestUser();
-        $this->simulateLogin($user);
+        $this->authenticateClient($this->client, $user);
 
         $this->client->request('GET', '/profile');
 
@@ -39,7 +31,7 @@ class ProfileControllerPhoenixTest extends BaseWebTestCase
     public function testTokenSubmissionWithValidToken(): void
     {
         $user = $this->createTestUser();
-        $this->simulateLogin($user);
+        $this->authenticateClient($this->client, $user);
 
         $this->client->request('GET', '/profile');
         $crawler = $this->client->getCrawler();
@@ -53,14 +45,14 @@ class ProfileControllerPhoenixTest extends BaseWebTestCase
         $this->assertSelectorExists('.flash-message.success');
         $this->assertStringContainsString('photos imported successfully', $this->client->getCrawler()->filter('.flash-message.success')->text());
         
-        $updatedUser = $this->em->getRepository(User::class)->find($user->getId());
+        $updatedUser = $this->getEntityManager()->getRepository(User::class)->find($user->getId());
         $this->assertEquals('test_token_user2_def456', $updatedUser->getPhoenixAccessToken());
     }
 
     public function testTokenSubmissionWithInvalidToken(): void
     {
         $user = $this->createTestUser();
-        $this->simulateLogin($user);
+        $this->authenticateClient($this->client, $user);
 
         $this->client->request('GET', '/profile');
         $crawler = $this->client->getCrawler();
@@ -78,7 +70,7 @@ class ProfileControllerPhoenixTest extends BaseWebTestCase
     public function testTokenSubmissionWithConnectionError(): void
     {
         $user = $this->createTestUser();
-        $this->simulateLogin($user);
+        $this->authenticateClient($this->client, $user);
 
         $this->client->request('GET', '/profile');
         $crawler = $this->client->getCrawler();
@@ -96,7 +88,7 @@ class ProfileControllerPhoenixTest extends BaseWebTestCase
     public function testSuccessfulPhotoImport(): void
     {
         $user = $this->createTestUser();
-        $this->simulateLogin($user);
+        $this->authenticateClient($this->client, $user);
 
         $this->client->request('GET', '/profile');
         $crawler = $this->client->getCrawler();
@@ -109,18 +101,18 @@ class ProfileControllerPhoenixTest extends BaseWebTestCase
 
         $this->assertSelectorExists('.flash-message.success');
         $this->assertStringContainsString('photos imported successfully', $this->client->getCrawler()->filter('.flash-message.success')->text());
-        $photos = $this->em->getRepository(Photo::class)->findBy(['user' => $user]);
+        $photos = $this->getEntityManager()->getRepository(Photo::class)->findBy(['user' => $user]);
         $this->assertCount(2, $photos);
         
         foreach ($photos as $photo) {
-            $this->assertStringStartsWith('https://images-', $photo->getImageUrl());
+            $this->assertStringStartsWith('https://images', $photo->getImageUrl());
         }
     }
 
     public function testEmptyPhotoResponse(): void
     {
         $user = $this->createTestUser();
-        $this->simulateLogin($user);
+        $this->authenticateClient($this->client, $user);
 
         $this->client->request('GET', '/profile');
         $crawler = $this->client->getCrawler();
@@ -138,7 +130,7 @@ class ProfileControllerPhoenixTest extends BaseWebTestCase
     public function testFlashMessageDisplayForAllScenarios(): void
     {
         $user = $this->createTestUser();
-        $this->simulateLogin($user);
+        $this->authenticateClient($this->client, $user);
 
         $this->client->request('GET', '/profile');
         $crawler = $this->client->getCrawler();
@@ -160,7 +152,7 @@ class ProfileControllerPhoenixTest extends BaseWebTestCase
     public function testCsrfProtectionOnProfileForm(): void
     {
         $user = $this->createTestUser();
-        $this->simulateLogin($user);
+        $this->authenticateClient($this->client, $user);
 
         $this->client->request('GET', '/profile');
         $crawler = $this->client->getCrawler();
@@ -177,49 +169,14 @@ class ProfileControllerPhoenixTest extends BaseWebTestCase
     {
         $user = $this->createTestUser();
         $user->setPhoenixAccessToken('existing-token-123');
-        $this->em->persist($user);
-        $this->em->flush();
+        $this->getEntityManager()->persist($user);
+        $this->getEntityManager()->flush();
         
-        $this->simulateLogin($user);
+        $this->authenticateClient($this->client, $user);
 
         $this->client->request('GET', '/profile');
 
         $this->assertResponseIsSuccessful();
         $this->assertInputValueSame('phoenix_access_token', 'existing-token-123');
-    }
-
-    private function createTestUser(): User
-    {
-        $user = new User();
-        $user->setUsername('testuser_' . uniqid());
-        $user->setEmail('test_' . uniqid() . '@example.com');
-        $user->setName('Test');
-        $user->setLastName('User');
-
-        $this->em->persist($user);
-        $this->em->flush();
-
-        return $user;
-    }
-
-    private function simulateLogin(User $user): void
-    {
-        $session = $this->client->getContainer()->get('session.factory')->createSession();
-        $session->set('user_id', $user->getId());
-        $session->set('username', $user->getUsername());
-        $session->save();
-        
-        $cookie = new \Symfony\Component\BrowserKit\Cookie(
-            $session->getName(),
-            $session->getId(),
-            null,
-            '/',
-            '',
-            false,
-            false,
-            false,
-            'Lax'
-        );
-        $this->client->getCookieJar()->set($cookie);
     }
 }

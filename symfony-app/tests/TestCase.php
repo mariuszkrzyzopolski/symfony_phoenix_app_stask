@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
+use App\Entity\Photo;
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -15,7 +17,9 @@ abstract class TestCase extends KernelTestCase
 
     protected function setUp(): void
     {
-        self::bootKernel();
+        if (self::$kernel === null) {
+            self::bootKernel();
+        }
         self::$testContainer = static::getContainer();
         
         self::initializeTestDatabase();
@@ -25,6 +29,10 @@ abstract class TestCase extends KernelTestCase
     protected function tearDown(): void
     {
         self::$testContainer = null;
+        // Ensure kernel is shut down to prevent interference with WebTestCase
+        if (self::$kernel !== null) {
+            self::ensureKernelShutdown();
+        }
     }
 
     public static function tearDownAfterClass(): void
@@ -36,6 +44,44 @@ abstract class TestCase extends KernelTestCase
     protected static function getTestContainer(): ?ContainerInterface
     {
         return self::$testContainer;
+    }
+
+    protected function getEntityManager(): \Doctrine\ORM\EntityManagerInterface
+    {
+        return self::$testContainer->get('doctrine')->getManager();
+    }
+
+    protected function createTestUser(string $username = null, array $additionalData = []): User
+    {
+        $username = $username ?? 'testuser_' . uniqid();
+
+        $user = new User();
+        $user->setUsername($username);
+        $user->setEmail($username . '@example.com');
+        $user->setName($additionalData['name'] ?? 'Test');
+        $user->setLastName($additionalData['lastName'] ?? 'User');
+        if (isset($additionalData['age'])) {
+            $user->setAge($additionalData['age']);
+        }
+
+        $this->getEntityManager()->persist($user);
+        $this->getEntityManager()->flush();
+
+        return $user;
+    }
+
+    protected function createTestPhoto(User $user, array $data = []): Photo
+    {
+        $photo = new Photo();
+        $photo->setImageUrl($data['imageUrl'] ?? 'https://example.com/photo.jpg');
+        $photo->setLocation($data['location'] ?? 'Test Location');
+        $photo->setDescription($data['description'] ?? 'Test photo');
+        $photo->setUser($user);
+
+        $this->getEntityManager()->persist($photo);
+        $this->getEntityManager()->flush();
+
+        return $photo;
     }
 
     private static function initializeTestDatabase(): void

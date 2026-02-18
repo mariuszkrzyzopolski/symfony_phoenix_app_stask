@@ -8,50 +8,33 @@ use App\Entity\Photo;
 use App\Entity\User;
 use App\Likes\Like;
 use App\Likes\LikeRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Tests\TestCase;
 
 class LikeRepositoryTest extends TestCase
 {
     private LikeRepository $repository;
-    private EntityManagerInterface $entityManager;
 
     protected function setUp(): void
     {
         parent::setUp();
         
-        $this->entityManager = TestCase::getTestContainer()
-            ->get('doctrine')
-            ->getManager();
+        $this->repository = $this->getEntityManager()->getRepository(Like::class);
         
-        $this->repository = $this->entityManager->getRepository(Like::class);
-        
-        $this->entityManager->beginTransaction();
+        $this->getEntityManager()->beginTransaction();
     }
 
     protected function tearDown(): void
     {
-        parent::tearDown();
-        
-        if ($this->entityManager->getConnection()->isTransactionActive()) {
-            $this->entityManager->rollback();
+        if ($this->getEntityManager()->getConnection()->isTransactionActive()) {
+            $this->getEntityManager()->rollback();
         }
         
-        $this->entityManager->close();
+        parent::tearDown();
     }
 
     private function createUser(string $username = 'testuser'): User
     {
-        $user = new User();
-        $user->setUsername($username);
-        $user->setEmail($username . '@example.com');
-        $user->setName('Test');
-        $user->setLastName('User');
-        
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-        
-        return $user;
+        return $this->createTestUser($username);
     }
 
     private function createPhoto(User $user, string $imageUrl = 'https://example.com/photo.jpg'): Photo
@@ -65,8 +48,8 @@ class LikeRepositoryTest extends TestCase
         $photo->setLikeCounter(0);
         $photo->setUser($user);
         
-        $this->entityManager->persist($photo);
-        $this->entityManager->flush();
+        $this->getEntityManager()->persist($photo);
+        $this->getEntityManager()->flush();
         
         return $photo;
     }
@@ -119,8 +102,8 @@ class LikeRepositoryTest extends TestCase
         $user = $this->createUser('liker');
         $photo = $this->createPhoto($user);
         $photo->setLikeCounter(5);
-        $this->entityManager->persist($photo);
-        $this->entityManager->flush();
+        $this->getEntityManager()->persist($photo);
+        $this->getEntityManager()->flush();
         
         $this->repository->setUser($user);
         $this->repository->createLike($photo);
@@ -133,7 +116,7 @@ class LikeRepositoryTest extends TestCase
         $this->assertFalse($this->repository->hasUserLikedPhoto($photo));
         
         // Refresh photo from database to get updated counter
-        $this->entityManager->refresh($photo);
+        $this->getEntityManager()->refresh($photo);
         $this->assertEquals(4, $photo->getLikeCounter());
     }
 
@@ -142,15 +125,15 @@ class LikeRepositoryTest extends TestCase
         $user = $this->createUser('liker');
         $photo = $this->createPhoto($user);
         $photo->setLikeCounter(3);
-        $this->entityManager->persist($photo);
-        $this->entityManager->flush();
+        $this->getEntityManager()->persist($photo);
+        $this->getEntityManager()->flush();
         
         $this->repository->setUser($user);
         $this->assertFalse($this->repository->hasUserLikedPhoto($photo));
         
         $this->repository->unlikePhoto($photo);
         
-        $this->entityManager->refresh($photo);
+        $this->getEntityManager()->refresh($photo);
         $this->assertEquals(3, $photo->getLikeCounter());
     }
 
@@ -159,17 +142,17 @@ class LikeRepositoryTest extends TestCase
         $user = $this->createUser('liker');
         $photo = $this->createPhoto($user);
         $photo->setLikeCounter(10);
-        $this->entityManager->persist($photo);
-        $this->entityManager->flush();
+        $this->getEntityManager()->persist($photo);
+        $this->getEntityManager()->flush();
         
         $this->repository->setUser($user);
         $this->repository->updatePhotoCounter($photo, 5);
         
-        $this->entityManager->refresh($photo);
+        $this->getEntityManager()->refresh($photo);
         $this->assertEquals(15, $photo->getLikeCounter());
         $this->repository->updatePhotoCounter($photo, -3);
         
-        $this->entityManager->refresh($photo);
+        $this->getEntityManager()->refresh($photo);
         $this->assertEquals(12, $photo->getLikeCounter());
     }
 
