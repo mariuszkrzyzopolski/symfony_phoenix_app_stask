@@ -22,6 +22,7 @@ Done:
 - Task 2 functionality with importing photos from phoenix api and test coverage
 - Basic complexity refactor for base components and tests
 - Task 3 filtering by fields with basic field sanitization
+- Task 4 with hammer rate limiting
 
 Additional tools used:
 - Windsurf with SWE-1.5 as Code Agent Assistant (VS code fork)

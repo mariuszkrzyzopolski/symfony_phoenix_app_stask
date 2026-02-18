@@ -46,7 +46,8 @@ defmodule PhoenixApi.MixProject do
       {:jason, "~> 1.4"},
       {:plug_cowboy, "~> 2.6"},
       {:nimble_csv, "~> 1.2"},
-      {:req, "~> 0.4"}
+      {:req, "~> 0.4"},
+      {:hammer, "~> 6.1"}
     ]
   end
 

@@ -33,28 +33,38 @@ class PhoenixApiService
 
             $statusCode = $response->getStatusCode();
             
-            if ($statusCode === 401) {
-                return [
-                    'success' => false,
-                    'error' => 'Invalid or expired token',
-                    'photos' => []
-                ];
-            }
-
-            if ($statusCode >= 500) {
-                return [
-                    'success' => false,
-                    'error' => 'Server error occurred',
-                    'photos' => []
-                ];
-            }
-
-            if ($statusCode !== 200) {
-                return [
-                    'success' => false,
-                    'error' => 'Unexpected response from server',
-                    'photos' => []
-                ];
+            switch ($statusCode) {
+                case 200:
+                    break;
+                    
+                case 401:
+                    return [
+                        'success' => false,
+                        'error' => 'Invalid or expired token',
+                        'photos' => []
+                    ];
+                    
+                case 429:
+                    return [
+                        'success' => false,
+                        'error' => 'Rate limit exceeded',
+                        'photos' => []
+                    ];
+                    
+                default:
+                    if ($statusCode >= 500) {
+                        return [
+                            'success' => false,
+                            'error' => 'Server error occurred',
+                            'photos' => []
+                        ];
+                    }
+                    
+                    return [
+                        'success' => false,
+                        'error' => 'Unexpected response from server',
+                        'photos' => []
+                    ];
             }
 
             $data = $response->toArray();

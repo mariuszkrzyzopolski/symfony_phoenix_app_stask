@@ -1,5 +1,11 @@
 import Config
 
+config :hammer,
+  backend: {Hammer.Backend.ETS, [
+    expiry_ms: 60_000 * 60,
+    cleanup_interval_ms: 60_000 * 10
+  ]}
+
 config :phoenix_api,
   ecto_repos: [PhoenixApi.Repo]
 

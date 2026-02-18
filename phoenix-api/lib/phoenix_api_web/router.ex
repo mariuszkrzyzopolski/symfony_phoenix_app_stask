@@ -3,6 +3,7 @@ defmodule PhoenixApiWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug PhoenixApiWeb.Plugs.RateLimiter
   end
 
   scope "/api", PhoenixApiWeb do

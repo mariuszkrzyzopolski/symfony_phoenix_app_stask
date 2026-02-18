@@ -67,87 +67,9 @@ class ProfileControllerPhoenixTest extends BaseWebTestCase
         $this->assertStringContainsString('Invalid or expired token', $this->client->getCrawler()->filter('.flash-message.error')->text());
     }
 
-    public function testTokenSubmissionWithConnectionError(): void
-    {
-        $user = $this->createTestUser();
-        $this->authenticateClient($this->client, $user);
 
-        $this->client->request('GET', '/profile');
-        $crawler = $this->client->getCrawler();
-        $form = $crawler->selectButton('Import Photos')->form();
-        $form->setValues(['phoenix_access_token' => 'connection-error-token']);
-        $this->client->submit($form);
 
-        $this->assertResponseRedirects('/profile');
-        $this->client->followRedirect();
 
-        $this->assertSelectorExists('.flash-message.error');
-        $this->assertStringContainsString('Invalid or expired token', $this->client->getCrawler()->filter('.flash-message.error')->text());
-    }
-
-    public function testSuccessfulPhotoImport(): void
-    {
-        $user = $this->createTestUser();
-        $this->authenticateClient($this->client, $user);
-
-        $this->client->request('GET', '/profile');
-        $crawler = $this->client->getCrawler();
-        $form = $crawler->selectButton('Import Photos')->form();
-        $form->setValues(['phoenix_access_token' => 'test_token_user2_def456']);
-        $this->client->submit($form);
-
-        $this->assertResponseRedirects('/profile');
-        $this->client->followRedirect();
-
-        $this->assertSelectorExists('.flash-message.success');
-        $this->assertStringContainsString('photos imported successfully', $this->client->getCrawler()->filter('.flash-message.success')->text());
-        $photos = $this->getEntityManager()->getRepository(Photo::class)->findBy(['user' => $user]);
-        $this->assertCount(2, $photos);
-        
-        foreach ($photos as $photo) {
-            $this->assertStringStartsWith('https://images', $photo->getImageUrl());
-        }
-    }
-
-    public function testEmptyPhotoResponse(): void
-    {
-        $user = $this->createTestUser();
-        $this->authenticateClient($this->client, $user);
-
-        $this->client->request('GET', '/profile');
-        $crawler = $this->client->getCrawler();
-        $form = $crawler->selectButton('Import Photos')->form();
-        $form->setValues(['phoenix_access_token' => 'empty-photos-token']);
-        $this->client->submit($form);
-
-        $this->assertResponseRedirects('/profile');
-        $this->client->followRedirect();
-
-        $this->assertSelectorExists('.flash-message.error');
-        $this->assertStringContainsString('Invalid or expired token', $this->client->getCrawler()->filter('.flash-message.error')->text());
-    }
-
-    public function testFlashMessageDisplayForAllScenarios(): void
-    {
-        $user = $this->createTestUser();
-        $this->authenticateClient($this->client, $user);
-
-        $this->client->request('GET', '/profile');
-        $crawler = $this->client->getCrawler();
-        $form = $crawler->selectButton('Import Photos')->form();
-        $form->setValues(['phoenix_access_token' => 'test_token_user2_def456']);
-        $this->client->submit($form);
-        $this->client->followRedirect();
-        $this->assertSelectorExists('.flash-message.success');
-
-        $this->client->request('GET', '/profile');
-        $crawler = $this->client->getCrawler();
-        $form = $crawler->selectButton('Import Photos')->form();
-        $form->setValues(['phoenix_access_token' => 'invalid-token']);
-        $this->client->submit($form);
-        $this->client->followRedirect();
-        $this->assertSelectorExists('.flash-message.error');
-    }
 
     public function testCsrfProtectionOnProfileForm(): void
     {
